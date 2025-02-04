@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if title %}
+    <title>{{ title }} - MiniBlog</title>
+    {% else %}
+    <title>Welcome to MiniBlog!</title>
+    {% endif %}
+</head>
+<body>
+    <div>MiniBlog: <a href="{{ url_for('index') }}">Home</a></div>
+    {% block content %}{% endblock %}
+</body>
+</html>
