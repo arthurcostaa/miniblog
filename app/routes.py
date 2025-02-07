@@ -1,12 +1,17 @@
-from flask import flash, render_template, redirect, url_for
+from urllib.parse import urlsplit
 
-from app import app
-from app.forms import LoginForm
+import sqlalchemy as sa
+from flask import flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+
+from app import app, db
+from app.forms import LoginForm, RegistrationForm
+from app.models import User
 
 
 @app.route('/')
+@login_required
 def index():
-    user = {'username': 'Arthur'}
     posts = [
         {
             'author': {'username': 'Arthur'},
@@ -17,13 +22,51 @@ def index():
             'body': 'Muita chuva em Natal.',
         }
     ]
-    return render_template('index.html', title='Home', user=user, posts=posts)
+    return render_template('index.html', title='Home', posts=posts)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
     form = LoginForm()
     if form.validate_on_submit():
-        flash(f'Login requested for {form.username.data} (remember_me={form.remember_me.data})')
-        return redirect(url_for('index'))
+        user = db.session.scalar(
+            sa.select(User).where(User.username == form.username.data)
+        )
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+
+        login_user(user, remember=form.remember_me.data)
+
+        next_page = request.args.get('next')
+        if next_page is None or urlsplit(next_page).netloc != '':
+            return redirect(url_for('index'))
+        return redirect(next_page)
+
     return render_template('login.html', title='Sign In', form=form)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+
+    return render_template('register.html', title='Register', form=form)
