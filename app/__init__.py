@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 
 db = SQLAlchemy()
-migrate = Migrate(db)
+migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'
 
@@ -16,7 +16,7 @@ def create_app(config_class=Config):
     app.config.from_object(Config)
 
     db.init_app(app)
-    migrate.init_app(app)
+    migrate.init_app(app, db)
     login.init_app(app)
 
     from app.auth import bp as auth_bp

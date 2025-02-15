@@ -1,4 +1,5 @@
 from datetime import datetime
+from hashlib import md5
 
 import sqlalchemy as sa
 import sqlalchemy.orm as so
@@ -17,7 +18,10 @@ class User(UserMixin, db.Model):
         sa.String(120), index=True, unique=True
     )
     password_hash: so.Mapped[str | None] = so.mapped_column(sa.String(256))
-    posts: so.Mapped[list['Post']] = so.relationship(back_populates='author')
+    posts: so.WriteOnlyMapped['Post'] = so.relationship(
+        back_populates='author'
+    )
+    about_me: so.Mapped[str | None] = so.mapped_column(sa.String(140))
 
     def __repr__(self) -> str:
         return f'<User {self.username}>'
@@ -27,6 +31,10 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
+
+    def avatar(self, size: int) -> str:
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
 
 class Post(db.Model):

@@ -30,6 +30,9 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
+        if username.data.strip().count(' ') > 0:
+            raise ValidationError('Username cannot contain whitespaces')
+
         user = db.session.scalar(
             sa.select(User).where(User.username == username.data)
         )
