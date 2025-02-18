@@ -7,8 +7,26 @@
             alt="{{ user.username }} profile photo">
         <h1>{{ user.username }}</h1>
         {% if user.about_me %}{{ user.about_me }}{% endif %}
-        {% if current_user == user %}
-        <p><a href="{{ url_for('main.edit_profile') }}">Edit profile</a></p>
+        <p>{{ user.following_count() }} following, {{ user.followers_count() }} followers</p>
+
+        {% if not current_user.is_anonymous %}
+            {% if current_user == user %}
+            <p><a href="{{ url_for('main.edit_profile') }}">Edit profile</a></p>
+            {% elif current_user.is_following(user) %}
+            <form
+                action="{{ url_for('main.unfollow', username=user.username) }}"
+                method="post">
+                {{ form.hidden_tag() }}
+                {{ form.submit(value='Unfollow') }}
+            </form>
+            {% else %}
+            <form
+                action="{{ url_for('main.follow', username=user.username) }}"
+                method="post">
+                {{ form.hidden_tag() }}
+                {{ form.submit(value='Follow') }}
+            </form>
+            {% endif %}
         {% endif %}
     </div>
     <hr>
