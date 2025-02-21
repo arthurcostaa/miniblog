@@ -1,39 +1,66 @@
 import sqlalchemy as sa
-from flask import flash, redirect, render_template, request, url_for
+from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app import db
 from app.main import bp
-from app.models import User
+from app.models import User, Post
 
-from .forms import EditProfileForm, EmptyForm
+from .forms import EditProfileForm, EmptyForm, PostForm
 
 
-@bp.route('/')
+@bp.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    posts = [
-        {
-            'author': {'username': 'Arthur'},
-            'body': 'Uma vez Flamengo, sempre Flamengo!',
-        },
-        {
-            'author': {'username': 'John'},
-            'body': 'Muita chuva em Natal.',
-        }
-    ]
-    return render_template('main/index.html', title='Home', posts=posts)
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.body.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('main.index'))
+
+    page = request.args.get('page', 1, type=int)
+    posts = db.paginate(
+        current_user.following_posts(),
+        page=page,
+        per_page=current_app.config['POSTS_PER_PAGE'],
+        error_out=False
+    )
+    next_url = url_for('main.index', page=posts.next_num) if posts.next_num else None
+    prev_url = url_for('main.index', page=posts.prev_num) if posts.prev_num else None
+    return render_template(
+        'main/index.html',
+        title='Home',
+        form=form,
+        posts=posts,
+        next_url=next_url,
+        prev_url=prev_url
+    )
 
 
 @bp.route('/user/<username>')
 def user(username):
     form = EmptyForm()
     user = db.first_or_404(sa.select(User).where(User.username == username))
-    posts = posts = [
-        {'author': user, 'body': 'First post'},
-        {'author': user, 'body': 'Second post'},
-    ]
-    return render_template('main/user.html', user=user, posts=posts, form=form)
+    posts_query = user.posts.select().order_by(Post.created_at.desc())
+    page = request.args.get('page', 1, type=int)
+    posts = db.paginate(
+        posts_query,
+        page=page,
+        per_page=current_app.config['POSTS_PER_PAGE'],
+        error_out=False
+    )
+    next_url = url_for('main.index', page=posts.next_num) if posts.next_num else None
+    prev_url = url_for('main.index', page=posts.prev_num) if posts.prev_num else None
+    return render_template(
+        'main/user.html',
+        title=f'{user.username}',
+        form=form,
+        user=user,
+        posts=posts,
+        next_url=next_url,
+        prev_url=prev_url
+    )
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
@@ -103,3 +130,25 @@ def unfollow(username):
         return redirect(url_for('main.user', username=user.username))
 
     return redirect(url_for('main.index'))
+
+
+@bp.route('/explore')
+@login_required
+def explore():
+    query = sa.select(Post).order_by(Post.created_at.desc())
+    page = request.args.get('page', 1, type=int)
+    posts = db.paginate(
+        query,
+        page=page,
+        per_page=current_app.config['POSTS_PER_PAGE'],
+        error_out=False
+    )
+    next_url = url_for('main.index', page=posts.next_num) if posts.next_num else None
+    prev_url = url_for('main.index', page=posts.prev_num) if posts.prev_num else None
+    return render_template(
+        'main/index.html',
+        title='Explore',
+        posts=posts,
+        next_url=next_url,
+        prev_url=prev_url
+    )
