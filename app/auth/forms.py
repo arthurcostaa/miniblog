@@ -45,3 +45,16 @@ class RegistrationForm(FlaskForm):
         )
         if user is not None:
             raise ValidationError('Please enter a different email.')
+
+
+class ResetPasswordRequestForm(FlaskForm):
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset Token')
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('New password', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Repeat the new password', validators=[DataRequired(), EqualTo('password')]
+    )
+    submit = SubmitField('Submit')

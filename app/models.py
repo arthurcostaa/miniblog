@@ -1,8 +1,12 @@
 from datetime import datetime
 from hashlib import md5
+from time import time
 
+from flask import current_app
+import jwt
 import sqlalchemy as sa
 import sqlalchemy.orm as so
+from jwt.exceptions import DecodeError, ExpiredSignatureError
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -104,6 +108,27 @@ class User(UserMixin, db.Model):
             .group_by(Post)
             .order_by(Post.created_at.desc())
         )
+
+    def get_reset_password_token(self, expires_in=600):
+        return jwt.encode(
+            {'reset_password': self.id, 'exp': time() + expires_in},
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+
+    @staticmethod
+    def verify_reset_password(token):
+        try:
+            payload = jwt.decode(
+                token,
+                current_app.config['SECRET_KEY'],
+                algorithms=['HS256']
+            )
+            user_id = payload['reset_password']
+        except (DecodeError, ExpiredSignatureError):
+            return
+
+        return db.session.get(User, user_id)
 
 
 class Post(db.Model):
