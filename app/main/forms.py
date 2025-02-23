@@ -33,5 +33,5 @@ class EmptyForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    body = TextAreaField(validators=[DataRequired(), Length(min=1, max=256)])
+    body = TextAreaField("What's happening?", validators=[DataRequired(), Length(min=1, max=256)])
     submit = SubmitField('Submit')

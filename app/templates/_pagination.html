@@ -1,0 +1,22 @@
+<nav class="mt-4" aria-label="Page navigation">
+    <ul class="pagination">
+        {% if prev_url %}
+            <li class="page-item">
+                <a class="page-link" href="{{ prev_url }}">Older posts</a>
+            </li>
+        {% else %}
+            <li class="page-item">
+                <a class="page-link disabled">Older posts</a>
+            </li>
+        {% endif %}
+        {% if next_url %}
+            <li class="page-item">
+                <a class="page-link" href="{{ next_url }}">Newer posts</a>
+            </li>
+        {% else %}
+            <li class="page-item">
+                <a class="page-link disabled">Newer posts</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>

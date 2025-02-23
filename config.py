@@ -18,4 +18,7 @@ class Config:
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = os.environ.get('ADMINS').split()
+    ADMINS = (
+        os.environ.get('ADMINS').split()
+        if os.environ.get('ADMINS') is not None else None
+    )
