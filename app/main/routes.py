@@ -152,3 +152,10 @@ def explore():
         next_url=next_url,
         prev_url=prev_url
     )
+
+
+@bp.route('/post/<post_id>')
+def post(post_id):
+    query = sa.select(Post).where(Post.id == post_id)
+    post = db.first_or_404(query)
+    return render_template('main/post.html', title=post.body, post=post)
