@@ -1,0 +1,4 @@
+.post:hover {
+    background-color: #eee;
+    transition: .7s;
+}
