@@ -43,6 +43,9 @@ class User(UserMixin, db.Model):
     posts: so.WriteOnlyMapped['Post'] = so.relationship(
         back_populates='author'
     )
+    comments: so.WriteOnlyMapped['Comment'] = so.relationship(
+        back_populates='author'
+    )
     about_me: so.Mapped[str | None] = so.mapped_column(sa.String(140))
     following: so.WriteOnlyMapped['User'] = so.relationship(
         secondary=followers,
@@ -146,9 +149,42 @@ class Post(db.Model):
         sa.ForeignKey(User.id), index=True
     )
     author: so.Mapped[User] = so.relationship(back_populates='posts')
+    comments: so.WriteOnlyMapped['Comment'] = so.relationship(
+        back_populates='post'
+    )
 
     def __repr__(self) -> str:
         return f'<Post {self.body}>'
+
+    def comments_count(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.comments.select().subquery()
+        )
+        return db.session.scalar(query)
+
+
+class Comment(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    body: so.Mapped[str] = so.mapped_column(sa.String(256))
+    user_id: so.Mapped[int] = so.mapped_column(
+        sa.ForeignKey(User.id), index=True
+    )
+    post_id: so.Mapped[int] = so.mapped_column(
+        sa.ForeignKey(Post.id)
+    )
+    created_at: so.Mapped[datetime] = so.mapped_column(
+        sa.DateTime(timezone=True),default=sa.func.now(), index=True
+    )
+    updated_at: so.Mapped[datetime] = so.mapped_column(
+        sa.DateTime(timezone=True),
+        default=sa.func.now(),
+        onupdate=sa.func.now()
+    )
+    author: so.Mapped[User] = so.relationship(back_populates='comments')
+    post: so.Mapped[Post] = so.relationship(back_populates='comments')
+
+    def __repr__(self):
+        return f'<Comment {self.body}>'
 
 
 @login.user_loader

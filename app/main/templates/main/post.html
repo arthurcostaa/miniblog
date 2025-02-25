@@ -3,4 +3,17 @@
 
 {% block content %}
     {{ macros.post(post) }}
+
+    <h3 class="my-3">Comments</h3>
+    {% if current_user.is_authenticated %}
+        {{ macros.quick_form(form, url_for('main.comment', post_id=post.id)) }}
+    {% endif %}
+
+    {% for comment in comments %}
+        {{ macros.post(comment) }}
+    {% endfor %}
+
+    {% if next_url or prev_url %}
+        {% include "_pagination.html" %}
+    {% endif %}
 {% endblock %}

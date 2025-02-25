@@ -4,9 +4,9 @@ from flask_login import current_user, login_required
 
 from app import db
 from app.main import bp
-from app.models import User, Post
+from app.models import Comment, User, Post
 
-from .forms import EditProfileForm, EmptyForm, PostForm
+from .forms import CommentForm, EditProfileForm, EmptyForm, PostForm
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -158,4 +158,43 @@ def explore():
 def post(post_id):
     query = sa.select(Post).where(Post.id == post_id)
     post = db.first_or_404(query)
-    return render_template('main/post.html', title=post.body, post=post)
+    page = request.args.get('page', 1, type=int)
+    comments = db.paginate(
+        post.comments.select().order_by(Comment.created_at.desc()),
+        page=page,
+        per_page=current_app.config['COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    form = CommentForm()
+    next_url = (
+        url_for('main.post', post_id=post_id, page=comments.next_num)
+        if comments.next_num else None
+    )
+    prev_url = (
+        url_for('main.post', post_id=post_id, page=comments.prev_num)
+        if comments.prev_num else None
+    )
+    return render_template(
+        'main/post.html',
+        title=post.body,
+        form=form,
+        post=post,
+        comments=comments,
+        next_url=next_url,
+        prev_url=prev_url
+    )
+
+
+@bp.route('/post/<post_id>/comment', methods=['POST'])
+@login_required
+def comment(post_id):
+    form = CommentForm()
+    if form.validate_on_submit():
+        query = sa.select(Post).where(Post.id == post_id)
+        post = db.first_or_404(query)
+        comment = Comment(body=form.body.data, author=current_user)
+        post.comments.add(comment)
+        db.session.commit()
+        return redirect(url_for('main.post', post_id=post.id))
+
+    return redirect(url_for('main.index'))
