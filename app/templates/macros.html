@@ -61,7 +61,7 @@
 {% endmacro %}
 
 
-{% macro post(post, detail) %}
+{% macro post(post, detail, num_comments) %}
     <div class="p-3 border-bottom {%if detail %}post{% endif%}">
         <div class="d-flex">
             <div class="me-3">
@@ -74,8 +74,18 @@
             </p>
         </div>
         <p class="text-break m-0">{{ post.body }}</p>
-        {% if detail %}
-            <p class="mb-1"><a href="{{ url_for('main.post', post_id=post.id) }}">Show More</a></p>
+        {% if detail or num_comments %}
+            <div class="my-2 d-flex flex-column">
+                {% if num_comments %}
+                    {% set comments = post.comments_count() %}
+                    <div class="d-flex flex-row">
+                        <p class="mb-1">{{ comments }} comment{% if comments != 1 %}s{% endif %}</p>
+                    </div>
+                {% endif %}
+                {% if detail %}
+                    <p class="mb-1"><a href="{{ url_for('main.post', post_id=post.id) }}">Show More</a></p>
+                {% endif %}
+            </div>
         {% endif %}
     </div>
 {% endmacro %}

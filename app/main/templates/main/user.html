@@ -29,7 +29,7 @@
     </div>
 
     {% for post in posts %}
-        {{ macros.post(post, detail=True) }}
+        {{ macros.post(post, detail=True, num_comments=True) }}
     {% endfor %}
 
     {% include "_pagination.html" %}

@@ -4,7 +4,7 @@
 {% block content %}
     {{ macros.post(post) }}
 
-    <h3 class="my-3">Comments</h3>
+    <h3 class="my-3">{{ post.comments_count() }} Comment{% if post.comments_count() != 1 %}s{% endif %}</h3>
     {% if current_user.is_authenticated %}
         {{ macros.quick_form(form, url_for('main.comment', post_id=post.id)) }}
     {% endif %}
