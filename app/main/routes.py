@@ -50,8 +50,14 @@ def user(username):
         per_page=current_app.config['POSTS_PER_PAGE'],
         error_out=False
     )
-    next_url = url_for('main.index', page=posts.next_num) if posts.next_num else None
-    prev_url = url_for('main.index', page=posts.prev_num) if posts.prev_num else None
+    next_url = (
+        url_for('main.user', username=user.username, page=posts.next_num)
+        if posts.next_num else None
+    )
+    prev_url = (
+        url_for('main.user', username=user.username, page=posts.prev_num)
+        if posts.prev_num else None
+    )
     return render_template(
         'main/user.html',
         title=f'{user.username}',
@@ -143,8 +149,8 @@ def explore():
         per_page=current_app.config['POSTS_PER_PAGE'],
         error_out=False
     )
-    next_url = url_for('main.index', page=posts.next_num) if posts.next_num else None
-    prev_url = url_for('main.index', page=posts.prev_num) if posts.prev_num else None
+    next_url = url_for('main.explore', page=posts.next_num) if posts.next_num else None
+    prev_url = url_for('main.explore', page=posts.prev_num) if posts.prev_num else None
     return render_template(
         'main/index.html',
         title='Explore',
