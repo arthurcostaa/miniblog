@@ -27,8 +27,10 @@
             {% endif %}
         </div>
     </div>
+
     {% for post in posts %}
         {{ macros.post(post, detail=True) }}
     {% endfor %}
-    {% if prev_url or next_url %}{% include "_pagination.html" %}{% endif %}
+
+    {% include "_pagination.html" %}
 {% endblock %}

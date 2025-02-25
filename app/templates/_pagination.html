@@ -1,22 +1,18 @@
-<nav class="mt-4" aria-label="Page navigation">
-    <ul class="pagination">
-        {% if prev_url %}
+{% if next_url or prev_url %}
+    <nav class="mt-4" aria-label="Page navigation">
+        <ul class="pagination">
             <li class="page-item">
-                <a class="page-link" href="{{ prev_url }}">Older posts</a>
+                <a
+                    class="page-link {% if not prev_url %}disabled{% endif %}"
+                    {% if prev_url %} href="{{ prev_url }}"{% endif %}
+                >Previous</a>
             </li>
-        {% else %}
             <li class="page-item">
-                <a class="page-link disabled">Older posts</a>
+                <a
+                    class="page-link {% if not next_url %}disabled{% endif %}"
+                    {% if next_url %} href="{{ next_url }}"{% endif %}
+                >Next</a>
             </li>
-        {% endif %}
-        {% if next_url %}
-            <li class="page-item">
-                <a class="page-link" href="{{ next_url }}">Newer posts</a>
-            </li>
-        {% else %}
-            <li class="page-item">
-                <a class="page-link disabled">Newer posts</a>
-            </li>
-        {% endif %}
-    </ul>
-</nav>
+        </ul>
+    </nav>
+{% endif %}

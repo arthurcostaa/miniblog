@@ -3,11 +3,14 @@
 
 {% block content %}
     <h1 class="mb-3">Hello, {{ current_user.username }}!</h1>
+
     {% if form %}
         {{ macros.quick_form(form) }}
     {% endif %}
+
     {% for post in posts %}
         {{ macros.post(post, detail=True) }}
     {% endfor %}
-    {% if prev_url or next_url %}{% include "_pagination.html" %}{% endif %}
+
+    {% include "_pagination.html" %}
 {% endblock %}

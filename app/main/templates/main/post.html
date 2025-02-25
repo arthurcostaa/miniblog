@@ -13,7 +13,5 @@
         {{ macros.post(comment) }}
     {% endfor %}
 
-    {% if next_url or prev_url %}
-        {% include "_pagination.html" %}
-    {% endif %}
+    {% include "_pagination.html" %}
 {% endblock %}
